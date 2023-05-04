@@ -1,4 +1,9 @@
 import openai
+import dotenv
+
+# Sets API key.
+config = dotenv.dotenv_values(".env")
+openai.api_key = config['OPENAI_API_KEY']
 
 history = [{"role": "system", "content": "You are a helpful assistant that gives concise answers."}]
 max_history = 10

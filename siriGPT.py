@@ -12,9 +12,28 @@ import gpt
 import whisper
 
 
+# Whisper prijs tracken
+global total_tokens
+total_tokens = 0
+global total_recordings
+total_recordings = 0
+
+# https://openai.com/pricing
+def calculate_cost():
+    # As of may 4th 2023
+
+    # $0.002 / 1K tokens
+    gpt_cost = (total_tokens / 1000) * 0.002
+    # $0.006 / minute
+    whisper_cost = (total_recordings * 0.1) * 0.006
+
+    return gpt_cost + whisper_cost
+
+
 # Recording settings.
 rec_fs = 44100
 rec_duration = 6
+
 # Records prompt & sends to whisper API.
 def record(event, query):
     # Deletes recording file if one exists.
@@ -38,11 +57,13 @@ def record(event, query):
 
 def main():
     # Initial text.
-    gpt_text = "\nWhat can I do for you?\n\t"
+    response = "What can I do for you?"
     try:
         while True:
+            print(response)
             prompt = ""
-            prompt = input(gpt_text)
+            prompt = input("\t")
+            # Empty prompt means use voice chat
             if prompt == "":
                 queryT = [None]
                 e = threading.Event()
@@ -50,24 +71,28 @@ def main():
                 t.start()
                 # Progress bar/ wheel not working yet
                 while not e.is_set():
-                    print('\tRecording.', end="\r")
+                    print('\tRecording.', end="\r", flush=True)
                     time.sleep(0.4)
-                    print('\tRecording..', end="\r")
+                    print('\tRecording..', end="\r", flush=True)
                     time.sleep(0.4)
-                    print('\tRecording...', end="\r")
+                    print('\tRecording...', end="\r", flush=True)
                     time.sleep(0.4)
                 prompt = queryT[0]
                 # Aanpassen aan return value enzo
                 if prompt is None:
-                    print('\tError parsing prompt.', end="\r")
+                    print('\tError parsing prompt.\n')
+                    continue
                 else:
-                    print(f'\t{prompt}', end="\r")
+                    print(f'\t{prompt}\n')
 
-            # Send prompt to GPT API
+            response, tokens_used = gpt.conversate(prompt)
+            global total_tokens
+            total_tokens += tokens_used
 
     # Catches ctrl+c & exits program.
     except KeyboardInterrupt:
-        print("\nGoodbye.")
+        print(f"\nGoodbye. Total cost of our conversation: ${calculate_cost()}")
         exit()
 
 main()
+# max history length en recording length als argparse doen
