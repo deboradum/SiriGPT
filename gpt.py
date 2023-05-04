@@ -1,5 +1,5 @@
-import openai
 import dotenv
+import openai
 
 # Sets API key.
 config = dotenv.dotenv_values(".env")
