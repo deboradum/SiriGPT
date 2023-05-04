@@ -1,4 +1,5 @@
 # Imports.
+import argparse
 import openai
 import os
 import sounddevice as sd
@@ -18,6 +19,11 @@ total_tokens = 0
 global total_recordings
 total_recordings = 0
 
+# Recording settings.
+rec_fs = 44100
+rec_duration = 6
+
+
 # https://openai.com/pricing
 def calculate_cost():
     # As of may 4th 2023
@@ -29,10 +35,6 @@ def calculate_cost():
 
     return gpt_cost + whisper_cost
 
-
-# Recording settings.
-rec_fs = 44100
-rec_duration = 6
 
 # Records prompt & sends to whisper API.
 def record(event, query):
@@ -94,5 +96,13 @@ def main():
         print(f"\nGoodbye. Total cost of our conversation: ${calculate_cost()}")
         exit()
 
-main()
-# max history length en recording length als argparse doen
+
+if __name__ == "__main__":
+    # max history length en recording length als argparse doen
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-mh', '--history', type=int, default=10,
+                        help='Maximum number of messages GPT will save and use as history of the conversation. More hisotry means more tokens used.')
+    args = vars(parser.parse_args())
+    gpt.max_history = args['history']
+    main()
+
