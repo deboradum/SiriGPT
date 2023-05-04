@@ -1,11 +1,11 @@
 import openai
-
-import sounddevice as sd
-import wavio as wv
 import os
-import threading
+import sounddevice as sd
 import sys
+import threading
 import time
+import wavio as wv
+
 
 fs = 44100
 duration = 5
