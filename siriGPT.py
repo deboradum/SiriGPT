@@ -127,7 +127,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument('-mh', '--history', type=int, default=10,
                         help='Maximum number of messages GPT will save and use as history of the conversation. More hisotry means more tokens used.')
-    parser.add_argument('-c', '--channels', type=int, default=1,
+    parser.add_argument('-c', '--channels', type=int, default=2,
                         help='Number of channels to record.')
     parser.add_argument('-d', '--duration', type=int, default=6,
                         help='Number of seconds to record.')
