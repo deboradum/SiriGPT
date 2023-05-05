@@ -47,7 +47,8 @@ def record(event, query):
     wv.write("prompt.wav", myrecording, rec_fs, sampwidth=2)
 
     transcript = whisper.transcribe()
-    query[0] = transcript.text
+    # query[0] = transcript.text
+    query[0] = transcript
 
     # Deletes recording file.
     if os.path.isfile("prompt.wav"):
@@ -71,7 +72,6 @@ def main():
                 e = threading.Event()
                 t = threading.Thread(target=record, args=(e, queryT), daemon=True)
                 t.start()
-                # Progress bar/ wheel not working yet
                 while not e.is_set():
                     print('\tRecording.', end="\r", flush=True)
                     time.sleep(0.4)
@@ -79,8 +79,9 @@ def main():
                     time.sleep(0.4)
                     print('\tRecording...', end="\r", flush=True)
                     time.sleep(0.4)
+                    sys.stdout.write("\033[K")
+                    time.sleep(0.4)
                 prompt = queryT[0]
-                # Aanpassen aan return value enzo
                 if prompt is None:
                     print('\tError parsing prompt.\n')
                     continue
@@ -94,6 +95,7 @@ def main():
     # Catches ctrl+c & exits program.
     except KeyboardInterrupt:
         print(f"\nGoodbye. Total cost of our conversation: ${calculate_cost()}")
+        sd.stop()
         exit()
 
 
