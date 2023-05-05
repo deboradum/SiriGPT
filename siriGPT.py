@@ -21,8 +21,6 @@ total_recordings = 0
 
 # Recording settings.
 rec_fs = 44100
-rec_duration = 6
-
 
 # https://openai.com/pricing
 def calculate_cost():
@@ -42,8 +40,10 @@ def record(event, query):
     if os.path.isfile("prompt.wav"):
         os.remove("prompt.wav")
 
+    global channels, rec_dur
+
     # Records & saves prompt.
-    myrecording = sd.rec(int(rec_duration * rec_fs), samplerate=rec_fs, channels=1, blocking=True)  # Need to check channel
+    myrecording = sd.rec(int(rec_dur * rec_fs), samplerate=rec_fs, channels=channels, blocking=True)  # Need to check channel
     wv.write("prompt.wav", myrecording, rec_fs, sampwidth=2)
 
     transcript = whisper.transcribe()
@@ -104,7 +104,15 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument('-mh', '--history', type=int, default=10,
                         help='Maximum number of messages GPT will save and use as history of the conversation. More hisotry means more tokens used.')
+    parser.add_argument('-c', '--channels', type=int, default=1,
+                        help='Number of channels to record.')
+    parser.add_argument('-d', '--duration', type=int, default=6,
+                        help='Number of seconds to record.')
     args = vars(parser.parse_args())
     gpt.max_history = args['history']
+    global channels, rec_dur
+    channels = args['channels']
+    rec_dur = args['duration']
+
     main()
 
