@@ -1,7 +1,9 @@
 # Imports.
 import argparse
+import gtts
 import openai
 import os
+import playsound
 import sounddevice as sd
 import sys
 import threading
@@ -41,14 +43,12 @@ def record(event, query):
         os.remove("prompt.wav")
 
     global channels, rec_dur
-
     # Records & saves prompt.
     myrecording = sd.rec(int(rec_dur * rec_fs), samplerate=rec_fs, channels=channels, blocking=True)  # Need to check channel
     wv.write("prompt.wav", myrecording, rec_fs, sampwidth=2)
 
     transcript = whisper.transcribe()
-    # query[0] = transcript.text
-    query[0] = transcript
+    query[0] = transcript.text
 
     # Deletes recording file.
     if os.path.isfile("prompt.wav"):
@@ -58,12 +58,29 @@ def record(event, query):
     event.set()
 
 
+# handles text to speech.
+def tts(text):
+    if os.path.isfile('tts.mp3'):
+        os.remove('tts.mp3')
+
+    s = gtts.gTTS(text)
+    s.save('tts.mp3')
+    playsound.playsound('tts.mp3')
+
+    if os.path.isfile('tts.mp3'):
+        os.remove('tts.mp3')
+
+
 def main():
     # Initial text.
     response = "What can I do for you?"
     try:
         while True:
+            # prints & speaks response.
             print(response)
+            t = threading.Thread(target=tts, args=(response, ), daemon=True)
+            t.start()
+
             prompt = ""
             prompt = input("\t")
             # Empty prompt means use voice chat
@@ -95,7 +112,13 @@ def main():
     # Catches ctrl+c & exits program.
     except KeyboardInterrupt:
         print(f"\nGoodbye. Total cost of our conversation: ${calculate_cost()}")
+        # Cleans up & deletes files on ctrl+c
         sd.stop()
+        if os.path.isfile('tts.mp3'):
+            os.remove('tts.mp3')
+        if os.path.isfile("prompt.wav"):
+            os.remove("prompt.wav")
+
         exit()
 
 
